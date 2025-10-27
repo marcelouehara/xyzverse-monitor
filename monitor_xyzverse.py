@@ -18,7 +18,7 @@ def get_xyzverse_data():
         
         # Captura os valores desejados
         current_text = page.locator(".Cards_amount__XRyyb.Cards_number__tCA2G").text_content()
-        goal_text = page.locator(".Cards_gray__b1UW2.Cards_small__6NNSv").text_content().replace(" / ","")
+        goal_text = page.locator(".Cards_gray__b1UW2.Cards_small__6NNSv span").first.text_content()
         next_price = page.locator("div:has-text('Próximo Preço') span").text_content()
 
         # Converte para float
