@@ -23,10 +23,10 @@ def get_xyzverse_data():
 
         # Converte para float
         try:
-    		current_val = float(current_text.replace("$","").replace(",",""))
-    		goal_val = float(goal_text.replace("$","").replace(",",""))
-	except ValueError:
-    		raise Exception(f"Não foi possível converter para float: current={current_text}, goal={goal_text}")
+            current_val = float(current_text.replace("$","").replace(",",""))
+            goal_val = float(goal_text.replace("$","").replace(",",""))
+        except ValueError:
+            raise Exception(f"Não foi possível converter para float: current={current_text}, goal={goal_text}")
 
         percent = round((current_val / goal_val) * 100, 2)
         
