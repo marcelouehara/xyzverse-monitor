@@ -22,8 +22,12 @@ def get_xyzverse_data():
         next_price = page.locator("div:has-text('Próximo Preço') span").text_content()
 
         # Converte para float
-        current_val = float(current_text.replace("$","").replace(",",""))
-        goal_val = float(goal_text.replace("$","").replace(",",""))
+        try:
+    		current_val = float(current_text.replace("$","").replace(",",""))
+    		goal_val = float(goal_text.replace("$","").replace(",",""))
+	except ValueError:
+    		raise Exception(f"Não foi possível converter para float: current={current_text}, goal={goal_text}")
+
         percent = round((current_val / goal_val) * 100, 2)
         
         timestamp = (datetime.utcnow() - timedelta(hours=3)).strftime("%d/%m/%Y %H:%M")
