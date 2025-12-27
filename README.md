@@ -12,5 +12,4 @@ Este projeto monitora os preços do XYZverse e envia notificações automáticas
 
 - `monitor_xyzverse.py`: Script principal de monitoramento.
 - `.github/workflows/daily_xyz.yml`: Workflow do GitHub Actions.
-- `README.md`: Este arquivo.
-
+- `README.md`: Este arquivo!
