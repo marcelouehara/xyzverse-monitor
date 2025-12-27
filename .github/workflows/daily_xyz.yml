@@ -2,7 +2,7 @@ name: Daily XYZ Monitor
 
 on:
   schedule:
-    - cron: '0 12 * * *' # todos os dias às 12h UTC
+    - cron: '0 12 * * *' # todos os dias às 12h UTC (9h BRT)
   workflow_dispatch:
 
 jobs:
