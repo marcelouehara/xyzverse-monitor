@@ -4,47 +4,48 @@ Monitoramento diário do XYZVerse usando Playwright e envio de e-mail.
 """
 
 from playwright.sync_api import sync_playwright
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import smtplib
 from email.mime.text import MIMEText
 import os
+import re
 
 def get_xyzverse_data():
     """Captura os valores do site XYZVerse usando Playwright."""
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto("https://xyzverse.io/pt")
+        page.goto("https://xyzverse.io/pt", timeout=60000)
 
-        # Esperar os elementos carregarem
-        page.wait_for_selector(".Cards_amount__XRyyb.Cards_number__tCA2G")
-        page.wait_for_selector(".Cards_gray__b1UW2.Cards_small__6NNSv")
-        page.wait_for_selector("div:has-text('Próximo Preço') span")
-        
-        # Captura os valores desejados
-        current_text = page.locator(".Cards_amount__XRyyb.Cards_number__tCA2G").text_content()
-        goal_text = page.locator(".Cards_gray__b1UW2.Cards_small__6NNSv").filter(has_text="$").first.text_content()
-        next_price = page.locator("div:has-text('Próximo Preço') span").first.text_content()
+        # Espera os elementos carregarem
+        page.wait_for_selector("span.Cards_amount__XRyyb.Cards_number__tCA2G")
+        page.wait_for_selector("span.Cards_gray__b1UW2.Cards_small__6NNSv")
+        page.wait_for_selector("div.Cards_small__6NNSv span.Cards_green__M3yEH")
 
-        # Converte para float
-        try:
-            current_val = float(current_text.replace("$","").replace(",",""))
-            goal_val = float(goal_text.replace("$","").replace(",",""))
-        except ValueError:
-            raise Exception(f"Não foi possível converter para float: current={current_text}, goal={goal_text}")
+        # Captura os valores corretos
+        current_text = page.locator("span.Cards_amount__XRyyb.Cards_number__tCA2G").first.text_content()
+        goal_text = page.locator("span.Cards_gray__b1UW2.Cards_small__6NNSv").filter(has_text="$").first.text_content()
+        price_now = page.locator("span.Cards_number__tCA2G").nth(1).text_content()
+        next_price = page.locator("div.Cards_small__6NNSv span.Cards_green__M3yEH").first.text_content()
 
-        percent = round((current_val / goal_val) * 100, 2)
-        
-        timestamp = (datetime.utcnow() - timedelta(hours=3)).strftime("%d/%m/%Y %H:%M")
-        
         browser.close()
-        
+
+        # Processar números
+        current_val = float(re.sub(r"[^\d.]", "", current_text))
+        goal_val = float(re.sub(r"[^\d.]", "", goal_text))
+        percent = round((current_val / goal_val) * 100, 2)
+
+        # Timestamp SP
+        timestamp = (datetime.now(timezone.utc) - timedelta(hours=3)).strftime("%d/%m/%Y %H:%M")
+
+        # Mensagem final
         message = (
-            f"{timestamp}\n"
-            f"Captação: ${current_val} / ${goal_val} ({percent}%)\n"
-            f"Preço atual: {current_val}\n"
+            f"Atualização XYZVerse - {timestamp}\n\n"
+            f"Captação: ${current_val:,.2f} / ${goal_val:,.2f} ({percent}%)\n"
+            f"Preço atual: {price_now}\n"
             f"Próximo preço: {next_price}"
         )
+
         return message
 
 def send_email(message):
@@ -69,4 +70,3 @@ if __name__ == "__main__":
         print(email_text)
     except Exception as e:
         print("Erro ao executar monitoramento:", e)
-
